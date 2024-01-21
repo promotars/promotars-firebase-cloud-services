@@ -9,9 +9,14 @@
 
 const {onCall} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
+const {logger} = require("firebase-functions/v1");
 
 admin.initializeApp();
 
-exports.businessLinkClick = onCall(async (request) => {
-  return await require("./functions/business_link_click.js")(request);
+exports.businessLinkClick = onCall({
+  enforceAppCheck: true
+}, async (request) => {
+  logger.info("Hello bro");
+  return;
+  // return await require("./functions/business_link_click.js")(request);
 });

@@ -5,9 +5,12 @@ const firestore = admin.firestore();
 
 module.exports = async (request) => {
   const promotionId = request.data.promotion_id;
+  const uniqueId = request.data.unique_id;
   //   logger.log("Promotion Id : "+promotionId);
   const remotConfig = await fetchAndSetRemoteConfig();
-  logger.info(remotConfig["ad_target_serviceable_locations"].defaultValue.value.toString());
+  if (remotConfig != null) {
+    logger.info(remotConfig["ad_target_serviceable_locations"].defaultValue.value.toString());
+  }
 
   await firestore.runTransaction(async (transaction)=>{
     let decrementCampaignBalanceQuota = false;
@@ -30,7 +33,7 @@ module.exports = async (request) => {
     const isPromotionActive = verifyPromotionStatus(influencerPromotionData);
     // logger.log("isPromotionActive : "+isPromotionActive);
     if (isPromotionActive) {
-      const isUniqueClick = processClick(transaction);
+      const isUniqueClick = processClick(transaction, uniqueId);
       //   logger.log("isUniqueClick : "+isUniqueClick);
       if (isUniqueClick === true) {
         decrementCampaignBalanceQuota = true;
@@ -79,11 +82,18 @@ module.exports = async (request) => {
         const data = {};
         if (incrementUniqueClicks) {
           data["unique_clicks_received"] = admin.firestore.FieldValue.increment(1);
+          data["last_updated"] = admin.firestore.FieldValue.serverTimestamp;
         }
         if (newReserve > 0) {
           data["reserved_clicks"] = admin.firestore.FieldValue.increment(newReserve);
         }
         transaction.update(firestore.collection("influencer_promotions").doc(promotionId), data);
+        if (incrementUniqueClicks) {
+          transaction.update(firestore.collection("promotions_click_tracks").doc().set({
+            "unique_id": uniqueId,
+            "clicked_on": admin.firestore.FieldValue.serverTimestamp,
+          }));
+        }
       }
     }
   }).then(()=>{
@@ -96,10 +106,15 @@ module.exports = async (request) => {
 /**
  *
  * @param {object} transaction - Firestore transaction
+ * @param {object} uniqueId - uniqueid
  * @return {boolean} weather click is unique or not
  */
-function processClick(transaction) {
-  // TODO : Click verification
+async function processClick(transaction, uniqueId) {
+  const snapshot = await transaction.get(firestore.collection("promotions_click_tracks").where("unique_id", "==", uniqueId).limit(1));
+  //   logger.log("getInfluencerPromotionData snapshot is "+snapshot.data());
+  if (!snapshot.empty && snapshot.docs.length > 0) {
+    return false;
+  }
   return true;
 }
 
