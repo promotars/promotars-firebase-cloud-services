@@ -7,10 +7,6 @@ module.exports = async (request) => {
   const promotionId = request.data.promotion_id;
   const uniqueId = request.data.unique_id;
   //   logger.log("Promotion Id : "+promotionId);
-  const remotConfig = await fetchAndSetRemoteConfig();
-  if (remotConfig != null) {
-    logger.info(remotConfig["ad_target_serviceable_locations"].defaultValue.value.toString());
-  }
 
   await firestore.runTransaction(async (transaction)=>{
     let decrementCampaignBalanceQuota = false;
@@ -96,13 +92,30 @@ module.exports = async (request) => {
           });
         }
       }
+    } else {
+      await ensurePromotionIsInactive(transaction, influencerPromotionData);
     }
   }).then(()=>{
-    logger.info("Transaction is Successful!");
+    logger.info("Link Click Recoreded");
   }).catch((err)=>{
-    logger.error("Transaction failed due to "+err.toString());
+    logger.error("Business Link click failed due to "+err.toString());
   });
 };
+
+
+/**
+ *
+ * @param {object} transaction
+ * @param {object} influencerPromotionData
+ * @return {*}
+ */
+async function ensurePromotionIsInactive(transaction, influencerPromotionData) {
+  if (influencerPromotionData.status != "inactive") {
+    transaction.update(firestore.collection("influencer_promotions").doc(influencerPromotionData.promotion_id), {
+      "status": "inactive",
+    });
+  }
+}
 
 /**
  *
@@ -173,20 +186,4 @@ async function getCampaignData(transaction, campaignId) {
     return snapshot.data();
   }
   return null;
-}
-
-/**
-*
-* @return {object|null}
-*/
-async function fetchAndSetRemoteConfig() {
-  const config = admin.remoteConfig();
-  try {
-    return (await config.getTemplate()).parameters;
-  } catch (e) {
-    logger.error("Unable to fetch Remote Config data "+e);
-    return null;
-  }
-  // logger.info("Fetched Remoted config data");
-  // logger.info(template.parameters["ad_target_serviceable_locations"].defaultValue.value.toString());
 }
