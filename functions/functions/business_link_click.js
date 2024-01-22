@@ -55,7 +55,7 @@ module.exports = async (request) => {
             //   logger.log("Increasing target size : ");
               newReserve = Math.min(influencerData.user_max_click_score+increaseScoreClick-achievedUniqueClicks, campaignData.balance_quota);
             //   logger.log("New reserve : "+newReserve);
-            }else{
+            } else {
               markPromotionInactive = true;
             }
           }
@@ -86,7 +86,7 @@ module.exports = async (request) => {
         if (newReserve > 0) {
           data["reserved_clicks"] = admin.firestore.FieldValue.increment(newReserve);
         }
-        if(markPromotionInactive === true){
+        if (markPromotionInactive === true) {
           data["status"] = "inactive";
         }
         transaction.update(firestore.collection("influencer_promotions").doc(promotionId), data);
