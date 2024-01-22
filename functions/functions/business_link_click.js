@@ -31,6 +31,7 @@ module.exports = async (request) => {
     if (isPromotionActive) {
       const isUniqueClick = await processClick(transaction, uniqueId, campaignId);
       //   logger.log("isUniqueClick : "+isUniqueClick);
+      let markPromotionInactive = false;
       if (isUniqueClick === true) {
         decrementCampaignBalanceQuota = true;
         incrementUniqueClicks = true;
@@ -54,6 +55,8 @@ module.exports = async (request) => {
             //   logger.log("Increasing target size : ");
               newReserve = Math.min(influencerData.user_max_click_score+increaseScoreClick-achievedUniqueClicks, campaignData.balance_quota);
             //   logger.log("New reserve : "+newReserve);
+            }else{
+              markPromotionInactive = true;
             }
           }
         }
@@ -74,7 +77,7 @@ module.exports = async (request) => {
         }
         transaction.update(firestore.collection("campaigns").doc(campaignId), data);
       }
-      if (incrementUniqueClicks === true || newReserve > 0) {
+      if (incrementUniqueClicks === true || newReserve > 0 || markPromotionInactive === true) {
         const data = {};
         if (incrementUniqueClicks) {
           data["unique_clicks_received"] = admin.firestore.FieldValue.increment(1);
@@ -82,6 +85,9 @@ module.exports = async (request) => {
         }
         if (newReserve > 0) {
           data["reserved_clicks"] = admin.firestore.FieldValue.increment(newReserve);
+        }
+        if(markPromotionInactive === true){
+          data["status"] = "inactive";
         }
         transaction.update(firestore.collection("influencer_promotions").doc(promotionId), data);
         if (incrementUniqueClicks) {

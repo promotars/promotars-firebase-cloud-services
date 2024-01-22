@@ -10,6 +10,7 @@
 const {onCall} = require("firebase-functions/v2/https");
 const {onSchedule} = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
+const logger = require("firebase-functions/logger");
 
 admin.initializeApp();
 
@@ -18,5 +19,6 @@ exports.businessLinkClick = onCall(async (request) => {
 });
 
 exports.inactivePromotionsUnlocker = onSchedule("every day 00:00", async (event) => {
-  return await require("./functions/inactive_promotions_unlocker.js");
+  logger.info("Auto Promotions Unlocker Triggered");
+  return await require("./functions/inactive_promotions_unlocker.js")();
 });
