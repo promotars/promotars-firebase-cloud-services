@@ -35,10 +35,10 @@ module.exports = async () => {
  */
 async function makePromotionInActive(transaction, influencerPromotionData) {
   const unlockableClicks = influencerPromotionData.reserved_clicks - influencerPromotionData.unique_clicks_received;
-  if (influencerPromotionData.status != "inactive") {
+  if (influencerPromotionData.status != "completed") {
     // logger.info("Updating influencer_promotions");
     transaction.update(firestore.collection("influencer_promotions").doc(influencerPromotionData.promotion_id), {
-      "status": "inactive",
+      "status": "completed",
       "reserved_clicks": influencerPromotionData.unique_clicks_received,
     });
   }

@@ -87,7 +87,7 @@ module.exports = async (request) => {
           data["reserved_clicks"] = admin.firestore.FieldValue.increment(newReserve);
         }
         if (markPromotionInactive === true) {
-          data["status"] = "inactive";
+          data["status"] = "completed";
         }
         transaction.update(firestore.collection("influencer_promotions").doc(promotionId), data);
         if (incrementUniqueClicks) {
@@ -116,9 +116,9 @@ module.exports = async (request) => {
  * @return {*}
  */
 async function ensurePromotionIsInactive(transaction, influencerPromotionData) {
-  if (influencerPromotionData.status != "inactive") {
+  if (influencerPromotionData.status != "completed") {
     transaction.update(firestore.collection("influencer_promotions").doc(influencerPromotionData.promotion_id), {
-      "status": "inactive",
+      "status": "completed",
     });
   }
 }
