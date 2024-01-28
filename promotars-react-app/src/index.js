@@ -7,7 +7,7 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import "firebase/compat/storage";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaV3Provider, CustomProvider } from "firebase/app-check";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -92,18 +92,57 @@ try {
     messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.REACT_APP_FIREBASE_APP_ID,
   });
+  
 
+  // const appCheck = initializeAppCheck(app, {
+  //   provider: new ReCaptchaV3Provider(
+  //     "6LdAdlwpAAAAAFvxMCpDkxQhk6Ve2tbqxd1qkhV6"
+  //   ),
+  //   // provider: new ReCaptchaV3Provider(process.env.REACT_APP_APP_CHECK_RECAPTCHA_SITEKEY),
+  //   isTokenAutoRefreshEnabled: true,
+  // });
+  if (process.env.NODE_ENV === "development") {
+  const appCheck = initializeAppCheck(app, {
+    provider: new CustomProvider({
+      getToken: () => {
+        return Promise.resolve({
+          token: "6LdAdlwpAAAAAFvxMCpDkxQhk6Ve2tbqxd1qkhV6",
+          expireTimeMillis: Date.now() + 1000 * 60 * 60*24, // 1 day
+        });
+      }
+    }),
+    isTokenAutoRefreshEnabled: true,
+  });
+  console.log("appCheck dev" + appCheck);
+  
+}else{
   const appCheck = initializeAppCheck(app, {
     provider: new ReCaptchaV3Provider(
       "6LdAdlwpAAAAAFvxMCpDkxQhk6Ve2tbqxd1qkhV6"
     ),
-    // provider: new ReCaptchaV3Provider(process.env.REACT_APP_APP_CHECK_RECAPTCHA_SITEKEY),
     isTokenAutoRefreshEnabled: true,
   });
+  console.log("appCheck prod" + appCheck);
+}
 
-  console.log("appCheck " + appCheck);
-  const firestore = app.firestore();
-  console.log("firestore " + firestore);
+  const db = app.firestore();
+  console.log("db " + db);
+
+  console.log("mode is " + process.env.NODE_ENV);
+
+  db.collection("influencer_promotions")
+  .where("influencer_id", "==", "af5o3dzZ32c1zoiOgT3yw8JAgzq2")
+  .get()
+  .then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+          // Access the document data using doc.data()
+          console.log(doc.id, " => ", doc.data());
+      });
+  })
+  .catch((error) => {
+      console.error("Error getting documents: ", error);
+  });
+
 } catch (e) {
   console.error("error occured "+ e);
 }

@@ -4,6 +4,7 @@
     "eslint-config-google": "^0.14.0"
   },
   "dependencies": {
+    "@firebase/app-check": "^0.8.1",
     "firebase": "^10.7.2"
   }
 }
