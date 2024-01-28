@@ -101,7 +101,7 @@ try {
   //   // provider: new ReCaptchaV3Provider(process.env.REACT_APP_APP_CHECK_RECAPTCHA_SITEKEY),
   //   isTokenAutoRefreshEnabled: true,
   // });
-  if (process.env.NODE_ENV === "development") {
+  
   const appCheck = initializeAppCheck(app, {
     provider: new CustomProvider({
       getToken: () => {
@@ -114,17 +114,6 @@ try {
     isTokenAutoRefreshEnabled: true,
   });
   console.log("appCheck dev" + appCheck);
-  
-}else{
-  const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(
-      "6LdAdlwpAAAAAFvxMCpDkxQhk6Ve2tbqxd1qkhV6"
-    ),
-    isTokenAutoRefreshEnabled: true,
-  });
-  console.log("appCheck prod" + appCheck);
-}
-
   const db = app.firestore();
   console.log("db " + db);
 
