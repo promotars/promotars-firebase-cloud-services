@@ -84,15 +84,15 @@ try {
   validatePromotionId();
 
   const app = firebase.initializeApp({
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-    databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID,
+    apiKey: "AIzaSyAJIH6br8wRLROTqukpQJ92X2XZz1ayVXM",
+    authDomain: "promotars-prod.firebaseapp.com",
+    databaseURL: "https://promotars-prod-default-rtdb.firebaseio.com",
+    projectId: "promotars-prod",
+    storageBucket: "promotars-prod.appspot.com",
+    messagingSenderId: "352154748068",
+    appId: "1:352154748068:web:6596382679fa67672fd231",
+    measurementId: "G-B7YZWNSSZT"
   });
-  
 
   // const appCheck = initializeAppCheck(app, {
   //   provider: new ReCaptchaV3Provider(
