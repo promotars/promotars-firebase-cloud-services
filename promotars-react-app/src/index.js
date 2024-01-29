@@ -25,15 +25,17 @@ root.render(
 // IIFE
 (async () => {
   try {
-    const isValidClick = checkIfClickIsValid();
-    console.log("isValidClick - " + isValidClick);
-    if (isValidClick === false) {
-      return redirectUserToLandingURL(getStoredLandingURL());
-    }
+
+    console.log("process.env.REACT_APP_ipKey -- " + process.env.REACT_APP_ipKey);
     const promotionId = validateAndGetPromotionId();
     if (promotionId === null) {
       console.log("promotionId is null");
       return redirectToHomePage();
+    }
+    const isValidClick = checkIfClickIsValid(promotionId);
+    console.log("isValidClick - " + isValidClick);
+    if (isValidClick === false) {
+      return redirectUserToLandingURL(getStoredLandingURL(promotionId));
     }
     const db = initFirebaseDB();
     const promotionData = await getPromotionData(db, promotionId);
@@ -59,7 +61,7 @@ root.render(
     console.log(objectForCF);
     // TODO: will CF successfully run if await is removed?
     await callBusinessClickFunction(objectForCF);
-    storeLandingURL(campaignData.landing_uri || "");
+    storeLandingURL(campaignData.landing_uri || "", promotionId);
     redirectUserToLandingURL(campaignData.landing_uri || "");
   } catch (e) {
     console.error("error occured " + e);
@@ -68,12 +70,12 @@ root.render(
 
 
 
-function checkIfClickIsValid() {
-  if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-    return true;
-  }
+function checkIfClickIsValid(promotionId) {
+  // if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+  //   return true;
+  // }
   let isValid = false;
-  const key = "dddd";
+  const key = promotionId;
   var storedDate = localStorage[key] || "0";
   if (storedDate === "0") {
     isValid = true;
@@ -82,7 +84,7 @@ function checkIfClickIsValid() {
     var currentDate = new Date();
     const diffInMilliSeconds = currentDate.getTime() - storedDatee;
     const inHours = diffInMilliSeconds / 3600000;
-    console.log("inHours - "+inHours);
+    console.log("inHours - " + inHours);
     isValid = inHours > 1;
   }
   // set time
@@ -91,12 +93,12 @@ function checkIfClickIsValid() {
   return isValid;
 }
 
-function storeLandingURL(url){
-  localStorage.setItem("LandingURL", url);
+function storeLandingURL(url, promotionId) {
+  localStorage.setItem(promotionId + "LandingURL", url);
 }
 
-function getStoredLandingURL(){
-  return localStorage["LandingURL"] || "";
+function getStoredLandingURL(promotionId) {
+  return localStorage[promotionId + "LandingURL"] || "";
 }
 
 function validateAndGetPromotionId() {
@@ -112,7 +114,7 @@ function validateAndGetPromotionId() {
 
 function redirectToHomePage() {
   console.log("redirectToHomePage");
-  // window.location.replace("https://promotars-prod.web.app?redirect=true");
+  // window.location.replace(process.env.REACT_APP_HOMEPAGE_URL);
 }
 
 function getUniqueID() {
@@ -158,19 +160,19 @@ function getUniqueID() {
 
 function initFirebaseDB() {
   const app = firebase.initializeApp({
-    apiKey: "AIzaSyAJIH6br8wRLROTqukpQJ92X2XZz1ayVXM",
-    authDomain: "promotars-prod.firebaseapp.com",
-    databaseURL: "https://promotars-prod-default-rtdb.firebaseio.com",
-    projectId: "promotars-prod",
-    storageBucket: "promotars-prod.appspot.com",
-    messagingSenderId: "352154748068",
-    appId: "1:352154748068:web:6596382679fa67672fd231",
-    measurementId: "G-B7YZWNSSZT"
+    apiKey: process.env.REACT_APP_Firebase_apiKey,
+    authDomain: process.env.REACT_APP_Firebase_authDomain,
+    databaseURL: process.env.REACT_APP_Firebase_databaseURL,
+    projectId: process.env.REACT_APP_Firebase_projectId,
+    storageBucket: process.env.REACT_APP_Firebase_storageBucket,
+    messagingSenderId: process.env.REACT_APP_Firebase_messagingSenderId,
+    appId: process.env.REACT_APP_Firebase_appId,
+    measurementId: process.env.REACT_APP_Firebase_measurementId,
   });
 
   // const appCheck = initializeAppCheck(app, {
   //   provider: new ReCaptchaV3Provider(
-  //     "6LdAdlwpAAAAAFvxMCpDkxQhk6Ve2tbqxd1qkhV6"
+  //     process.env.REACT_APP_reCaptchaKey
   //   ),
   //   // provider: new ReCaptchaV3Provider(process.env.REACT_APP_APP_CHECK_RECAPTCHA_SITEKEY),
   //   isTokenAutoRefreshEnabled: true,
@@ -180,7 +182,7 @@ function initFirebaseDB() {
     provider: new CustomProvider({
       getToken: () => {
         return Promise.resolve({
-          token: "6LdAdlwpAAAAAFvxMCpDkxQhk6Ve2tbqxd1qkhV6",
+          token: process.env.REACT_APP_reCaptchaKey,
           expireTimeMillis: Date.now() + 1000 * 60 * 60 * 24, // 1 day
         });
       }
@@ -235,7 +237,7 @@ function isCampaignLocationBased(campaignData) {
 async function fetchUsersLatLong() {
   try {
     // TODO: get token from ENV
-    const response = await fetch("https://ipinfo.io?token=d96f9cd8658639");
+    const response = await fetch("https://ipinfo.io?token=" + process.env.REACT_APP_ipKey);
     if (response.ok) {
       const data = await response.json();
       const { loc } = data;
@@ -260,10 +262,10 @@ async function callBusinessClickFunction(params) {
 }
 
 function redirectUserToLandingURL(url) {
-  console.log("redirectUserToLandingURL - url - "+url);
+  console.log("redirectUserToLandingURL - url - " + url);
   if (url.toString().length !== 0) {
     // BOTH - opens in current tab with back button option
-    window.open(url,"_self");
+    window.open(url, "_self");
     // window.location.replace(url);
   } else {
     console.log("landing url does not exist");
