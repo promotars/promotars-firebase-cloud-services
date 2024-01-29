@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-<script>self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;</script>
+
 function App() {
   return (
     // <div className="App">
