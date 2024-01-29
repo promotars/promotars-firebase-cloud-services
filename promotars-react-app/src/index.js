@@ -25,8 +25,6 @@ root.render(
 // IIFE
 (async () => {
   try {
-
-    console.log("process.env.REACT_APP_ipKey -- " + process.env.REACT_APP_ipKey);
     const promotionId = validateAndGetPromotionId();
     if (promotionId === null) {
       console.log("promotionId is null");
@@ -106,7 +104,7 @@ function validateAndGetPromotionId() {
   const urlParams = new URLSearchParams(queryString);
   const promotionId = urlParams.get('id') || "";
   if (promotionId.length === 0) {
-    console.error("promotionId is empty");
+    console.log("promotionId is empty");
     return null;
   }
   return promotionId;
