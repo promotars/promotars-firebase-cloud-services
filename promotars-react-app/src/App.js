@@ -19,7 +19,6 @@ function App() {
     //     </a>
     //   </header>
     <div className="App">
-       <p>hello React</p>
     </div>
   );
 }

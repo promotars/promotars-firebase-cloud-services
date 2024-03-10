@@ -1,0 +1,23 @@
+to run react app 
+
+cd promotars-react-app
+npm install (only once next time we can skip this)
+npm start
+
+
+to deploy react app
+
+
+
+
+.env
+
+
+REACT_APP_Firebase_apiKey = AIzaSyAJIH6br8wRLROTqukpQJ92X2XZz1ayVXM
+REACT_APP_Firebase_authDomain = promotars-prod.firebaseapp.com
+REACT_APP_Firebase_databaseURL = https://promotars-prod-default-rtdb.firebaseio.com
+REACT_APP_Firebase_projectId = promotars-prod
+REACT_APP_Firebase_storageBucket = promotars-prod.appspot.com
+REACT_APP_Firebase_messagingSenderId = 352154748068
+REACT_APP_Firebase_appId = 1:352154748068:web:6596382679fa67672fd231
+REACT_APP_Firebase_measurementId = G-B7YZWNSSZT
