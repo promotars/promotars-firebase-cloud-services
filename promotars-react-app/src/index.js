@@ -29,6 +29,7 @@ root.render(
 var promotionId;
 var db;
 var campaignData;
+var appDiv;
 
 // IIFE
 (async () => {
@@ -38,7 +39,7 @@ var campaignData;
       console.log("promotionId is null");
       return redirectToHomePage();
     }
-    
+
     db = initFirebaseDB();
     fetchCampaignUIData();
   } catch (e) {
@@ -51,22 +52,33 @@ async function fetchCampaignUIData() {
   if (campaignData == null) {
     return redirectToHomePage();
   }
+  const companyName = campaignData.business_name;
+  const adTitle = campaignData.caption;
+
+  setAppDiv();
+
+  displayCompanyNameAndAdCaptionText(companyName, adTitle);
+
   const type = campaignData.media_type;
   const isImage = type === "image";
   const mediaUri = campaignData.media_uri;
   // displayVideo("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
-  if(mediaUri != null){
+  if (mediaUri != null) {
     if (isImage) {
       displayImage(mediaUri);
-    }else{
+    } else {
       displayVideo(mediaUri);
     }
   }
   displayProceedButton();
 }
 
-function displayImage(mediaUri) {
-  const appDiv = document.querySelector(".App"); 
+function setAppDiv() {
+  appDiv = document.querySelector(".App");
+  // appDiv.style.backgroundColor = 'black';
+};
+
+function displayImage(mediaUri) {  
   const imgElement = document.createElement("img");
   imgElement.src = mediaUri;
   imgElement.alt = "Today's Image"; // Set alt attribute for accessibility
@@ -74,21 +86,34 @@ function displayImage(mediaUri) {
 }
 
 function displayVideo(mediaUri) {
-  const appDiv = document.querySelector('.App'); 
-  const videoElement = document.createElement('video');
+  const videoElement = document.createElement("video");
   videoElement.src = mediaUri;
-  videoElement.controls = true; 
+  videoElement.controls = true;
   videoElement.autoplay = true;
   appDiv.appendChild(videoElement);
 }
 
-function displayProceedButton(mediaUri) {
-  const appDiv = document.querySelector(".App");
+function displayCompanyNameAndAdCaptionText(companyName, adTitle) {
+  const h1Element = document.createElement("h1");
+  h1Element.textContent = companyName;
+
+  const h2Element = document.createElement("h2");
+  h2Element.textContent = adTitle;
+
+  h1Element.style.color = 'white';
+  h2Element.style.color = 'white';
+
+  appDiv.appendChild(h1Element);
+  appDiv.appendChild(h2Element);
+}
+
+function displayProceedButton() {
   const buttonElement = document.createElement("button");
   buttonElement.textContent = "Proceed";
   buttonElement.addEventListener("click", () => {
     proceedClicked();
   });
+
   appDiv.appendChild(buttonElement);
 }
 
