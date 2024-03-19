@@ -36,3 +36,53 @@
     transform: rotate(360deg);
   }
 }
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  width: 80%;
+  max-width: 400px; /* Adjust the max-width to your preference */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* Add relative positioning */
+}
+
+h1,h2,h3,h4,h5,h6 {
+  color: black;
+}
+
+.media-container {
+  flex-grow: 1; /* Fill available space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Ensure image doesn't overflow from container */
+}
+
+.image {
+  max-width: 100%; /* Set image width to fill its container */
+  max-height: 100%; /* Set image height to fill its container */
+  object-fit: contain; /* Maintain aspect ratio and fit inside container */
+}
+
+.video {
+  max-width: 100%; /* Set image width to fill its container */
+  max-height: 100%; /* Set image height to fill its container */
+  object-fit: contain; /* Maintain aspect ratio and fit inside container */
+}
+
+button {
+  margin-top: 20px; /* Adjust margin to create space between image and button */
+  margin-bottom: 20px; /* Adjust margin to create space between image and button */
+  background-color: black;
+  color: white;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
