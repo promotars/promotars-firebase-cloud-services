@@ -66,14 +66,14 @@ function processUI(campaignData){
   const type = campaignData.media_type;
   const isImage = type === "image";
   const mediaUri = campaignData.media_uri;
-  displayVideo("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
-  // if (mediaUri != null) {
-  //   if (isImage) {
-  //     displayImage(mediaUri);
-  //   } else {
-  //     displayVideo(mediaUri);
-  //   }
-  // }
+  // displayVideo("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
+  if (mediaUri != null) {
+    if (isImage) {
+      displayImage(mediaUri);
+    } else {
+      displayVideo(mediaUri);
+    }
+  }
   activateProceedButton();
 }
 
