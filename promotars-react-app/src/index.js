@@ -52,37 +52,42 @@ async function fetchCampaignUIData() {
   if (campaignData == null) {
     return redirectToHomePage();
   }
+  
+
+  processUI(campaignData);
+}
+
+function processUI(campaignData){
+
   const companyName = campaignData.business_name;
   const adTitle = campaignData.caption;
-
-  setAppDiv();
-
   displayCompanyNameAndAdCaptionText(companyName, adTitle);
 
   const type = campaignData.media_type;
   const isImage = type === "image";
   const mediaUri = campaignData.media_uri;
-  // displayVideo("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
-  if (mediaUri != null) {
-    if (isImage) {
-      displayImage(mediaUri);
-    } else {
-      displayVideo(mediaUri);
-    }
-  }
-  displayProceedButton();
+  displayVideo("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
+  // if (mediaUri != null) {
+  //   if (isImage) {
+  //     displayImage(mediaUri);
+  //   } else {
+  //     displayVideo(mediaUri);
+  //   }
+  // }
+  activateProceedButton();
 }
 
-function setAppDiv() {
-  appDiv = document.querySelector(".App");
-  // appDiv.style.backgroundColor = 'black';
-};
+function displayCompanyNameAndAdCaptionText(companyName, adTitle) {
+  document.getElementById("title").textContent = companyName;
+  document.getElementById("subtitle").textContent = adTitle;
+}
 
 function displayImage(mediaUri) {  
   const imgElement = document.createElement("img");
   imgElement.src = mediaUri;
   imgElement.alt = "Today's Image"; // Set alt attribute for accessibility
-  appDiv.appendChild(imgElement);
+  imgElement.classList.add("image");
+  document.querySelector(".media-container").appendChild(imgElement);
 }
 
 function displayVideo(mediaUri) {
@@ -90,31 +95,17 @@ function displayVideo(mediaUri) {
   videoElement.src = mediaUri;
   videoElement.controls = true;
   videoElement.autoplay = true;
-  appDiv.appendChild(videoElement);
+  videoElement.loop = true;
+  videoElement.classList.add("video"); 
+  document.querySelector(".media-container").appendChild(videoElement);
+  videoElement.play();
 }
 
-function displayCompanyNameAndAdCaptionText(companyName, adTitle) {
-  const h1Element = document.createElement("h1");
-  h1Element.textContent = companyName;
 
-  const h2Element = document.createElement("h2");
-  h2Element.textContent = adTitle;
-
-  h1Element.style.color = 'white';
-  h2Element.style.color = 'white';
-
-  appDiv.appendChild(h1Element);
-  appDiv.appendChild(h2Element);
-}
-
-function displayProceedButton() {
-  const buttonElement = document.createElement("button");
-  buttonElement.textContent = "Proceed";
-  buttonElement.addEventListener("click", () => {
+function activateProceedButton() {
+  document.getElementById("proceed").addEventListener("click", function() {
     proceedClicked();
   });
-
-  appDiv.appendChild(buttonElement);
 }
 
 async function proceedClicked() {
