@@ -8,7 +8,11 @@ module.exports = async (request) => {
   const promotionId = request.data.promotion_id;
   const uniqueId = request.data.unique_id;
   const recaptchaToken = request.data.recaptcha_key;
+  const clientIp = request.rawRequest.headers["x-forwarded-for"];
+  const isLocationBasedCampaign = request.data.is_location_based_campaign;
+  logger.log("Client IP : "+clientIp);
   logger.log("Recaptch key : " + recaptchaToken);
+  logger.log("isLocationBasedCampaign : "+isLocationBasedCampaign);
   //   logger.log("Promotion Id : "+promotionId);
   if (recaptchaToken != null && recaptchaToken.length > 0) {
     const secretKeyV3 = "6LcT17gpAAAAAH0hEQIBjGAf2GfNDHvIRnVrRTSx"; // Prod Key
@@ -35,6 +39,16 @@ module.exports = async (request) => {
         const campaignId = influencerPromotionData.campaign_id;
         const influencerId = influencerPromotionData.influencer_id;
 
+        let campaignData = null;
+        if (isLocationBasedCampaign) {
+          const remoteConfig = await fetchAndSetRemoteConfig();
+          const serviceLocations = remoteConfig["ad_target_serviceable_location"].defaultValue.value;
+          campaignData = await getCampaignData(transaction, campaignId);
+          if (!await isClickFromLocationRange(clientIp, serviceLocations, campaignData)) {
+            return;
+          }
+        }
+
         const isPromotionActive = verifyPromotionStatus(influencerPromotionData);
         // logger.log("isPromotionActive : "+isPromotionActive);
         if (isPromotionActive) {
@@ -57,7 +71,9 @@ module.exports = async (request) => {
                   increaseScoreClick = Math.round(influencerData.user_max_click_score * 0.3);
                 }
               }
-              const campaignData = await getCampaignData(transaction, campaignId);
+              if (campaignData === null) {
+                campaignData = await getCampaignData(transaction, campaignId);
+              }
               //   logger.log("campaignData : "+campaignData);
               if (campaignData != null) {
                 if (campaignData.unlocked_quota > 0) {
@@ -203,4 +219,88 @@ async function getCampaignData(transaction, campaignId) {
     return snapshot.data();
   }
   return null;
+}
+
+/**
+*
+* @return {object|null}
+*/
+async function fetchAndSetRemoteConfig() {
+  const config = admin.remoteConfig();
+  try {
+    return (await config.getTemplate()).parameters;
+  } catch (e) {
+    logger.error("Unable to fetch Remote Config data "+e);
+    return null;
+  }
+  // logger.info("Fetched Remoted config data");
+  // logger.info(template.parameters["ad_target_serviceable_locations"].defaultValue.value.toString());
+}
+
+/**
+ *
+ * @param {*} clientIP
+ * @param {*} serviceLocations
+ * @param {*} campaignData
+ * @return {object}
+ */
+async function isClickFromLocationRange(clientIP, serviceLocations, campaignData) {
+  const locationParts = campaignData.target_locations[0].split("-");
+  const locationType = locationParts[locationParts.length - 1];
+
+  const clientLocationData = await axios.get("https://ipinfo.io/"+clientIP+"/json?token=d96f9cd8658639");
+
+  const clientLat = clientLocationData.data.loc.toString().split(",")[0];
+  const clientLong = clientLocationData.data.loc.toString().split(",")[1];
+  const region = clientLocationData.data.region.toLowerCase().replace(/ /g, "_");
+  const country = clientLocationData.data.country.toLowerCase();
+
+  if (locationType === "city") {
+    const serviceCities = serviceLocations.cities;
+    for (const targetLocation of campaignData.target_locations) {
+      if (serviceCities[targetLocation] != null) {
+        const targetLat = serviceCities[targetLocation]["lat"];
+        const taregtLong = serviceCities[targetLocation]["long"];
+        const distance = calculateDistance(targetLat, taregtLong, clientLat, clientLong);
+        console.log(distance);
+        if (distance < 60) {
+          return true;
+        }
+      }
+    }
+  } else {
+    for (const targetLocation of campaignData.target_locations) {
+      if (locationType === "state") {
+        if (targetLocation.toLowerCase().includes("-"+country+"-") && targetLocation.toLowerCase().includes(region+"-")) {
+          return true;
+        }
+      } else if (locationType === "country") {
+        if (targetLocation.toLowerCase().includes(country+"-")) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ *
+ * @param {*} lat1
+ * @param {*} lon1
+ * @param {*} lat2
+ * @param {*} lon2
+ * @return {object}
+ */
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in kilometers
+  return distance;
 }

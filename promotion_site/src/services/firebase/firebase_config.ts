@@ -1,3 +1,4 @@
+import { ReCaptchaV3Provider, initializeAppCheck } from "@firebase/app-check";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
@@ -8,9 +9,15 @@ const app = initializeApp({
     projectId: "promotars-prod",
     storageBucket: "promotars-prod.appspot.com",
     messagingSenderId: "352154748068",
-    appId: "1:352154748068:web:6596382679fa67672fd231",
-    measurementId: "G-B7YZWNSSZT"
+    appId: "1:352154748068:web:dda7466fd5f580282fd231",
+    measurementId: "G-77P4S8W7KJ"
+});
+
+const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider('6LcT17gpAAAAAIW9S8yzfH3Rf7OGN9diyxzpQ6wn'),
+    isTokenAutoRefreshEnabled: true
 });
 
 export const db = getFirestore(app)
+export default appCheck;
 

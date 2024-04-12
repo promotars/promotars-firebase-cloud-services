@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { db } from "../../services/firebase/firebase_config";
 import { doc, getDoc } from "firebase/firestore";
 import Utils from "../../utils/utils";
 import callBusinessClickFunction from "../../services/firebase/cloud_functions";
+import { db } from "../../services/firebase/firebase_config";
 import useRecaptchaV3 from "../hooks/RecaptchaV3";
 
 
@@ -69,13 +69,14 @@ function MainApp() {
     async function ctaClick() {
         const recaptchKey = await executeRecaptcha("ad_click");
         const promotionId = validateAndGetPromotionId();
-        if (recaptchKey != null && recaptchKey.length > 0 && promotionId != null && promotionId.length > 0) {
-            // console.log(recaptchKey);
+        if (recaptchKey != null && promotionId != null && promotionId.length > 0) {
+            console.log(recaptchKey);
             let uid = Utils.getUniqueID()
             callBusinessClickFunction({
                 "unique_id": uid,
-                "promotion_id": validateAndGetPromotionId(),
-                "recaptcha_key": recaptchKey
+                "promotion_id": promotionId,
+                "recaptcha_key": recaptchKey,
+                "is_location_based_campaign": campaignData.get("target_locations") != null && campaignData.get("target_locations").length > 0
             })
             window.location.href = campaignData.get("landing_uri")
         }
