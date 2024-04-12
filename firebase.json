@@ -15,7 +15,8 @@
     }
   ],
   "hosting": {
-    "public": "promotars-react-app/build",
+    "site": "ad-promotars",
+    "public": "promotion_site/dist",
     "ignore": [
       "firebase.json",
       "**/.*",

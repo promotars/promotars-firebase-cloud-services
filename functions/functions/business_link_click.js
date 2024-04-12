@@ -1,111 +1,122 @@
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const axios = require("axios");
 
 const firestore = admin.firestore();
 
 module.exports = async (request) => {
   const promotionId = request.data.promotion_id;
   const uniqueId = request.data.unique_id;
+  const recaptchaToken = request.data.recaptcha_key;
+  logger.log("Recaptch key : " + recaptchaToken);
   //   logger.log("Promotion Id : "+promotionId);
+  if (recaptchaToken != null && recaptchaToken.length > 0) {
+    const secretKeyV3 = "6LcT17gpAAAAAH0hEQIBjGAf2GfNDHvIRnVrRTSx"; // Prod Key
+    const recaptchaResponse = await axios.post("https://www.google.com/recaptcha/api/siteverify?secret=" + secretKeyV3 + "&response=" + recaptchaToken);
 
-  await firestore.runTransaction(async (transaction)=>{
-    let decrementCampaignBalanceQuota = false;
-    let incrementUniqueClicks = false;
-    let increaseUserLevel = false;
+    logger.log("Captcha Score : " + recaptchaResponse.data.score);
+    logger.log("Capcth action : " + recaptchaResponse.data.action);
+    if (recaptchaResponse.data.success && recaptchaResponse.data.score > 0.75 && recaptchaResponse.data.action === "ad_click") {
+      await firestore.runTransaction(async (transaction) => {
+        let decrementCampaignBalanceQuota = false;
+        let incrementUniqueClicks = false;
+        let increaseUserLevel = false;
 
-    let newReserve = 0;
-    let influencerData;
-    let increaseScoreClick = 0;
+        let newReserve = 0;
+        let influencerData;
+        let increaseScoreClick = 0;
 
-    const influencerPromotionData = await getInfluencerPromotionData(transaction, promotionId);
-    if (influencerPromotionData == null) {
-      logger.warn("influencerPromotionData is null");
-      return;
-    }
+        const influencerPromotionData = await getInfluencerPromotionData(transaction, promotionId);
+        if (influencerPromotionData == null) {
+          logger.warn("influencerPromotionData is null");
+          return;
+        }
 
-    const campaignId = influencerPromotionData.campaign_id;
-    const influencerId = influencerPromotionData.influencer_id;
+        const campaignId = influencerPromotionData.campaign_id;
+        const influencerId = influencerPromotionData.influencer_id;
 
-    const isPromotionActive = verifyPromotionStatus(influencerPromotionData);
-    // logger.log("isPromotionActive : "+isPromotionActive);
-    if (isPromotionActive) {
-      const isUniqueClick = await processClick(transaction, uniqueId, campaignId);
-      //   logger.log("isUniqueClick : "+isUniqueClick);
-      let markPromotionInactive = false;
-      if (isUniqueClick === true) {
-        decrementCampaignBalanceQuota = true;
-        incrementUniqueClicks = true;
-        const achievedUniqueClicks = influencerPromotionData.unique_clicks_received+1;
-        // logger.log("achievedUniqueClicks : "+achievedUniqueClicks);
-        if (achievedUniqueClicks >= influencerPromotionData.reserved_clicks) {
-        //   logger.log("Influencer Target achieved with in the time : ");
-          influencerData = await getInfluencerUserData(transaction, influencerId);
-          //   logger.log("influencerData : "+influencerData);
-          if (influencerData != null) {
-            if (achievedUniqueClicks >= influencerData.user_max_click_score) {
-            //   logger.log("increasing user level");
-              increaseUserLevel = true;
-              increaseScoreClick = Math.round(influencerData.user_max_click_score * 0.3);
+        const isPromotionActive = verifyPromotionStatus(influencerPromotionData);
+        // logger.log("isPromotionActive : "+isPromotionActive);
+        if (isPromotionActive) {
+          const isUniqueClick = await processClick(transaction, uniqueId, campaignId);
+          //   logger.log("isUniqueClick : "+isUniqueClick);
+          let markPromotionInactive = false;
+          if (isUniqueClick === true) {
+            decrementCampaignBalanceQuota = true;
+            incrementUniqueClicks = true;
+            const achievedUniqueClicks = influencerPromotionData.unique_clicks_received + 1;
+            // logger.log("achievedUniqueClicks : "+achievedUniqueClicks);
+            if (achievedUniqueClicks >= influencerPromotionData.reserved_clicks) {
+              //   logger.log("Influencer Target achieved with in the time : ");
+              influencerData = await getInfluencerUserData(transaction, influencerId);
+              //   logger.log("influencerData : "+influencerData);
+              if (influencerData != null) {
+                if (achievedUniqueClicks >= influencerData.user_max_click_score) {
+                  //   logger.log("increasing user level");
+                  increaseUserLevel = true;
+                  increaseScoreClick = Math.round(influencerData.user_max_click_score * 0.3);
+                }
+              }
+              const campaignData = await getCampaignData(transaction, campaignId);
+              //   logger.log("campaignData : "+campaignData);
+              if (campaignData != null) {
+                if (campaignData.unlocked_quota > 0) {
+                  //   logger.log("Increasing target size : ");
+                  newReserve = Math.min(influencerData.user_max_click_score + increaseScoreClick - achievedUniqueClicks, campaignData.balance_quota);
+                  //   logger.log("New reserve : "+newReserve);
+                } else {
+                  markPromotionInactive = true;
+                }
+              }
             }
           }
-          const campaignData = await getCampaignData(transaction, campaignId);
-          //   logger.log("campaignData : "+campaignData);
-          if (campaignData != null) {
-            if (campaignData.unlocked_quota > 0) {
-            //   logger.log("Increasing target size : ");
-              newReserve = Math.min(influencerData.user_max_click_score+increaseScoreClick-achievedUniqueClicks, campaignData.balance_quota);
-            //   logger.log("New reserve : "+newReserve);
-            } else {
-              markPromotionInactive = true;
+          if (increaseUserLevel) {
+            // logger.log("New score increase by : "+increaseScoreClick);
+            transaction.update(firestore.collection("influencer_users").doc(influencerId), {
+              "user_max_click_score": admin.firestore.FieldValue.increment(increaseScoreClick),
+            });
+          }
+          if (decrementCampaignBalanceQuota === true || newReserve > 0) {
+            const data = {};
+            if (decrementCampaignBalanceQuota) {
+              data["balance_quota"] = admin.firestore.FieldValue.increment(-1);
+            }
+            if (newReserve > 0) {
+              data["unlocked_quota"] = admin.firestore.FieldValue.increment(-newReserve);
+            }
+            transaction.update(firestore.collection("campaigns").doc(campaignId), data);
+          }
+          if (incrementUniqueClicks === true || newReserve > 0 || markPromotionInactive === true) {
+            const data = {};
+            if (incrementUniqueClicks) {
+              data["unique_clicks_received"] = admin.firestore.FieldValue.increment(1);
+              data["last_updated"] = admin.firestore.FieldValue.serverTimestamp();
+            }
+            if (newReserve > 0) {
+              data["reserved_clicks"] = admin.firestore.FieldValue.increment(newReserve);
+            }
+            if (markPromotionInactive === true) {
+              data["status"] = "completed";
+            }
+            transaction.update(firestore.collection("influencer_promotions").doc(promotionId), data);
+            if (incrementUniqueClicks) {
+              transaction.set(firestore.collection("promotions_click_tracks").doc(), {
+                "unique_id": uniqueId,
+                "campaign_id": campaignId,
+                "clicked_on": admin.firestore.FieldValue.serverTimestamp(),
+              });
             }
           }
+        } else {
+          await ensurePromotionIsInactive(transaction, influencerPromotionData);
         }
-      }
-      if (increaseUserLevel) {
-        // logger.log("New score increase by : "+increaseScoreClick);
-        transaction.update(firestore.collection("influencer_users").doc(influencerId), {
-          "user_max_click_score": admin.firestore.FieldValue.increment(increaseScoreClick),
-        });
-      }
-      if (decrementCampaignBalanceQuota === true || newReserve > 0) {
-        const data = {};
-        if (decrementCampaignBalanceQuota) {
-          data["balance_quota"] = admin.firestore.FieldValue.increment(-1);
-        }
-        if (newReserve > 0) {
-          data["unlocked_quota"] = admin.firestore.FieldValue.increment(-newReserve);
-        }
-        transaction.update(firestore.collection("campaigns").doc(campaignId), data);
-      }
-      if (incrementUniqueClicks === true || newReserve > 0 || markPromotionInactive === true) {
-        const data = {};
-        if (incrementUniqueClicks) {
-          data["unique_clicks_received"] = admin.firestore.FieldValue.increment(1);
-          data["last_updated"] = admin.firestore.FieldValue.serverTimestamp();
-        }
-        if (newReserve > 0) {
-          data["reserved_clicks"] = admin.firestore.FieldValue.increment(newReserve);
-        }
-        if (markPromotionInactive === true) {
-          data["status"] = "completed";
-        }
-        transaction.update(firestore.collection("influencer_promotions").doc(promotionId), data);
-        if (incrementUniqueClicks) {
-          transaction.set(firestore.collection("promotions_click_tracks").doc(), {
-            "unique_id": uniqueId,
-            "campaign_id": campaignId,
-            "clicked_on": admin.firestore.FieldValue.serverTimestamp(),
-          });
-        }
-      }
-    } else {
-      await ensurePromotionIsInactive(transaction, influencerPromotionData);
+      }).then(() => {
+        logger.info("Link Click Recoreded");
+      }).catch((err) => {
+        logger.error("Business Link click failed due to " + err.toString());
+      });
     }
-  }).then(()=>{
-    logger.info("Link Click Recoreded");
-  }).catch((err)=>{
-    logger.error("Business Link click failed due to "+err.toString());
-  });
+  }
 };
 
 
