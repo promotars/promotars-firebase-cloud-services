@@ -42,9 +42,9 @@ module.exports = async (request) => {
         let campaignData = null;
         if (isLocationBasedCampaign) {
           const remoteConfig = await fetchAndSetRemoteConfig();
-          const serviceLocations = remoteConfig["ad_target_serviceable_location"].defaultValue.value;
+          const serviceLocations = remoteConfig["ad_target_serviceable_locations"].defaultValue.value;
           campaignData = await getCampaignData(transaction, campaignId);
-          if (!await isClickFromLocationRange(clientIp, serviceLocations, campaignData)) {
+          if (!await isClickFromLocationRange(clientIp, JSON.parse(serviceLocations), campaignData)) {
             return;
           }
         }
@@ -52,7 +52,7 @@ module.exports = async (request) => {
         const isPromotionActive = verifyPromotionStatus(influencerPromotionData);
         // logger.log("isPromotionActive : "+isPromotionActive);
         if (isPromotionActive) {
-          const isUniqueClick = await processClick(transaction, uniqueId, campaignId);
+          const isUniqueClick = await processClick(transaction, uniqueId, campaignId, influencerId);
           //   logger.log("isUniqueClick : "+isUniqueClick);
           let markPromotionInactive = false;
           if (isUniqueClick === true) {
@@ -120,6 +120,7 @@ module.exports = async (request) => {
                 "unique_id": uniqueId,
                 "campaign_id": campaignId,
                 "clicked_on": admin.firestore.FieldValue.serverTimestamp(),
+                "from_influencer_id": influencerId,
               });
             }
           }
@@ -155,10 +156,11 @@ async function ensurePromotionIsInactive(transaction, influencerPromotionData) {
  * @param {object} transaction - Firestore transaction
  * @param {object} uniqueId - uniqueid
  * @param {object} campaignId - campaignId
+ * @param {object} fromInfId - from Influencer Id
  * @return {boolean} weather click is unique or not
  */
-async function processClick(transaction, uniqueId, campaignId) {
-  const snapshot = await transaction.get(firestore.collection("promotions_click_tracks").where("campaign_id", "==", campaignId).where("unique_id", "==", uniqueId).limit(1));
+async function processClick(transaction, uniqueId, campaignId, fromInfId) {
+  const snapshot = await transaction.get(firestore.collection("promotions_click_tracks").where("campaign_id", "==", campaignId).where("unique_id", "==", uniqueId).where("from_influencer_id", "==", fromInfId).limit(1));
   //   logger.log("getInfluencerPromotionData snapshot is "+snapshot.data());
   if (!snapshot.empty && snapshot.docs.length > 0) {
     return false;
@@ -256,7 +258,7 @@ async function isClickFromLocationRange(clientIP, serviceLocations, campaignData
   const country = clientLocationData.data.country.toLowerCase();
 
   if (locationType === "city") {
-    const serviceCities = serviceLocations.cities;
+    const serviceCities = serviceLocations["cities"];
     for (const targetLocation of campaignData.target_locations) {
       if (serviceCities[targetLocation] != null) {
         const targetLat = serviceCities[targetLocation]["lat"];
