@@ -6,7 +6,10 @@ import 'package:url_launcher/url_launcher.dart';
 class GoogleDownloadButton extends StatelessWidget {
   const GoogleDownloadButton({
     super.key,
+    required this.width,
   });
+
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +19,7 @@ class GoogleDownloadButton extends StatelessWidget {
       },
       child: Image.asset(
         ImagePath.googleDownload,
+        width: width,
       ),
     );
   }

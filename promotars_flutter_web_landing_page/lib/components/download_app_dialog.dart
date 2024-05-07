@@ -5,6 +5,7 @@ import 'package:promotars_flutter_web_landing_page/utils/app_colors.dart';
 import 'package:promotars_flutter_web_landing_page/utils/app_config.dart';
 import 'package:promotars_flutter_web_landing_page/utils/app_style.dart';
 import 'package:promotars_flutter_web_landing_page/utils/image_path.dart';
+import 'package:promotars_flutter_web_landing_page/utils/responsive.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DownloadAppDialog extends StatelessWidget {
@@ -37,7 +38,7 @@ class DownloadAppDialog extends StatelessWidget {
           ),
           Text(
             text,
-            style: AppStyle.p1.copyWith(fontSize: 25),
+            style: AppStyle.p1(context).copyWith(fontSize: Sizes(10 * 2, 12 * 2, 14 * 2).responsiveValue(context)),
           ),
           const SizedBox(height: 10),
           Padding(
@@ -56,11 +57,11 @@ class DownloadAppDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
                           ImagePath.appLogo,
-                          height: 100,
+                          height: Sizes(60, 80, 100).responsiveValue(context),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      GoogleDownloadButton(),
+                      GoogleDownloadButton(width: Responsive.isMobile(context) ? 100 : null),
                     ],
                   ),
                 ),
@@ -81,11 +82,11 @@ class DownloadAppDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
                           ImagePath.appLogo,
-                          height: 100,
+                          height: Sizes(60, 80, 100).responsiveValue(context),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      AppleDownloadButton(),
+                      AppleDownloadButton(width: Responsive.isMobile(context) ? 100 : null),
                     ],
                   ),
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promotars_flutter_web_landing_page/components/web_app_bar.dart';
 import 'package:promotars_flutter_web_landing_page/components/web_footer.dart';
+import 'package:promotars_flutter_web_landing_page/utils/responsive.dart';
 
 class WebTemplate extends StatelessWidget {
   const WebTemplate({
@@ -21,7 +22,9 @@ class WebTemplate extends StatelessWidget {
               child: Column(
                 children: [
                   ...child,
-                  const WebFooter(),
+                  Responsive.isMobile(context)
+                      ? const MobileWebFooter()
+                      : const WebFooter(),
                 ],
               ),
             ),

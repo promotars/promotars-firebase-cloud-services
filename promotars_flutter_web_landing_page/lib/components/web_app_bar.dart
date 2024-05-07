@@ -3,6 +3,7 @@ import 'package:promotars_flutter_web_landing_page/components/download_app_btn.d
 import 'package:promotars_flutter_web_landing_page/utils/app_colors.dart';
 import 'package:promotars_flutter_web_landing_page/utils/app_config.dart';
 import 'package:promotars_flutter_web_landing_page/utils/image_path.dart';
+import 'package:promotars_flutter_web_landing_page/utils/responsive.dart';
 import 'package:promotars_flutter_web_landing_page/utils/routes.dart';
 
 class WebAppBar extends StatelessWidget {
@@ -15,8 +16,8 @@ class WebAppBar extends StatelessWidget {
     return Container(
       color: AppColors.primary,
       height: 80,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConfig.contentPadding,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppConfig.contentPadding(context),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
@@ -32,7 +33,7 @@ class WebAppBar extends StatelessWidget {
                 Image.asset(
                   ImagePath.appLogo,
                   height: 60,
-                ),
+                ),if(!Responsive.isMobile(context))
                 Image.asset(
               ImagePath.appLogoText,
               width: 100,

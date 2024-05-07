@@ -7,7 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 class AppleDownloadButton extends StatelessWidget {
   const AppleDownloadButton({
     super.key,
+    required this.width,
   });
+
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +20,7 @@ class AppleDownloadButton extends StatelessWidget {
       },
       child: Image.asset(
         ImagePath.appleDownload,
+        width: width,
       ),
     );
   }

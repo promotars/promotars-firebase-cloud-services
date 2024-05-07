@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:promotars_flutter_web_landing_page/components/download_app_btn.dart';
 import 'package:promotars_flutter_web_landing_page/screens/web_template.dart';
@@ -6,6 +5,7 @@ import 'package:promotars_flutter_web_landing_page/utils/app_colors.dart';
 import 'package:promotars_flutter_web_landing_page/utils/app_config.dart';
 import 'package:promotars_flutter_web_landing_page/utils/app_style.dart';
 import 'package:promotars_flutter_web_landing_page/utils/image_path.dart';
+import 'package:promotars_flutter_web_landing_page/utils/responsive.dart';
 
 class WhatsInItContentModel {
   final String title;
@@ -22,13 +22,15 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String newLine = Responsive.isDesktop(context) ?  "\n" : " ";
+    final double webContentHeight =
+        Sizes(250, 390, 550).responsiveValue(context);
     return WebTemplate(child: [
       Container(
-        height: 550,
+        height: webContentHeight + (Responsive.isMedium(context) ? 60 : 0),
         width: double.infinity,
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppConfig.contentPadding),
-        child: Center(
+        padding: EdgeInsets.symmetric(horizontal: AppConfig.contentPadding(context)),
+        child:  Center(
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
@@ -37,16 +39,12 @@ class Home extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "One Stop Solution\nFor Business Growth",
-                      style: AppStyle.h1.copyWith(fontSize: 50),
-                    ),
-                    const SizedBox(height: 30),
-                    Text(
-                      "We help business owners increase their revenue. Our team\nof unique specialist can help you achieve your business goals.",
-                      style: AppStyle.p1,
-                    ),
-                    const SizedBox(height: 30),
+                    Title(text: "One Stop Solution${newLine}For Business Growth"),
+                    SizedBox(height: Sizes(10, 20, 30).responsiveValue(context)),
+                    SubTitle(
+                        text:
+                            "We help business owners increase their revenue. Our team${newLine}of unique specialist can help you achieve your business goals.",),
+                    SizedBox(height: Sizes(20, 20, 30).responsiveValue(context)),
                     const DownloadAppButton(
                       text: "Download Now",
                       invertColor: true,
@@ -54,20 +52,17 @@ class Home extends StatelessWidget {
                   ],
                 ),
               ),
-              Image.asset(
-                ImagePath.illustration1,
-                height: 400,
-              ),
+              SizedBox(width: Sizes(10, 20, 30).responsiveValue(context)),
+              const IllustrationImage(path: ImagePath.illustration1),
             ],
           ),
         ),
       ),
       Container(
-        height: 550,
+        height: webContentHeight + (Responsive.isMedium(context) ? 40 : 0),
         color: AppColors.primary,
         width: double.infinity,
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppConfig.contentPadding),
+        padding: EdgeInsets.symmetric(horizontal: AppConfig.contentPadding(context)),
         child: Center(
           child: Row(
             mainAxisSize: MainAxisSize.max,
@@ -77,42 +72,89 @@ class Home extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Promote Your\nBusiness",
-                      style: AppStyle.h1
-                          .copyWith(fontSize: 50, color: AppColors.white),
+                     Title(text: "Promote Your${newLine}Business", invertColor: true),
+                    SizedBox(height: Sizes(10, 20, 30).responsiveValue(context)),
+                     SubTitle(
+                      text:
+                          "Our specialized mobile app helps you to promote${newLine}your business on your desired platforms by enabling${newLine}promoters from various platforms, bring there audience to your business",
+                      invertColor: true,
                     ),
-                    const SizedBox(height: 30),
-                    Text(
-                      "Our specialized mobile app helps you to promote\nyour business on your desired platforms by enabling\npromoters from various platforms, bring there audience to your business",
-                      style: AppStyle.p1.copyWith(color: AppColors.white),
-                    ),
-                    const SizedBox(height: 30),
+                    SizedBox(height: Sizes(20, 20, 30).responsiveValue(context)),
                     const DownloadAppButton(text: "Try Now"),
                   ],
                 ),
               ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  ImagePath.socialMedia,
-                  height: 400,
-                ),
-              ),
+              SizedBox(width: Sizes(10, 20, 30).responsiveValue(context)),
+              const IllustrationImage(path: ImagePath.socialMedia),
             ],
           ),
         ),
       ),
       Container(
-        height: 550,
+        height: webContentHeight + (Responsive.isMobile(context) ? 180 : Responsive.isMedium(context) ? 55 : 0),
         width: double.infinity,
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppConfig.contentPadding),
+        padding: EdgeInsets.symmetric(horizontal: AppConfig.contentPadding(context)),
         child: const Center(
           child: WhatsInIt(),
         ),
       ),
     ]);
+  }
+}
+
+class IllustrationImage extends StatelessWidget {
+  const IllustrationImage({
+    required this.path,
+  });
+
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      path,
+      height: Sizes(150, 250, 400).responsiveValue(context),
+    );
+  }
+}
+
+class SubTitle extends StatelessWidget {
+  const SubTitle({
+    super.key,
+    required this.text,
+    this.invertColor = false,
+  });
+  final bool invertColor;
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: AppStyle.p1(context).copyWith(
+        color: invertColor ? AppColors.white : AppColors.black,
+      ),
+    );
+  }
+}
+
+class Title extends StatelessWidget {
+  const Title({
+    super.key,
+    required this.text,
+    this.invertColor = false,
+  });
+  final bool invertColor;
+  final String text;
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: AppStyle.h1(context).copyWith(
+        color: invertColor ? AppColors.white : AppColors.black,
+      ),
+    );
   }
 }
 
@@ -132,14 +174,14 @@ class _WhatsInItState extends State<WhatsInIt>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 50),
+        SizedBox(height: Sizes(20, 25, 50).responsiveValue(context)),
         Text(
           "What's in it for you",
-          style: AppStyle.h1,
+          style: AppStyle.h1(context),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: Sizes(5, 5, 10).responsiveValue(context)),
         SizedBox(
-          height: 50,
+          // height: 50,
           width: 200,
           child: TabBar(
             controller: controller,
@@ -149,6 +191,7 @@ class _WhatsInItState extends State<WhatsInIt>
             ],
           ),
         ),
+        SizedBox(height: Sizes(25, 25, 25).responsiveValue(context)),
         Expanded(
           child: TabBarView(
             controller: controller,
@@ -214,36 +257,43 @@ class WhatsInItContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(
-        data.length,
-        (index) {
-          return Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  data[index].image,
-                  width: 200,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: List.generate(
+          data.length,
+          (index) {
+            return Expanded(
+              child: Container(
+              margin: EdgeInsets.symmetric(horizontal: Sizes(10, 15, 20).responsiveValue(context),),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Image.asset(
+                      data[index].image,
+                      width: Sizes(80, 120, 200).responsiveValue(context),
+                    ),
+                     SizedBox(height: Sizes(10,15,20).responsiveValue(context),),
+                    Text(
+                      data[index].title,
+                      style: AppStyle.h4(context).copyWith(fontWeight: FontWeight.normal),
+                      textAlign: TextAlign.center,
+                    ),
+                     SizedBox(height: Sizes(10,15,20).responsiveValue(context),),
+                    Text(
+                      data[index].subtitle,
+                      style: AppStyle.p1(context).copyWith(),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  data[index].title,
-                  style: AppStyle.h4.copyWith(fontWeight: FontWeight.normal),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  data[index].subtitle,
-                  style: AppStyle.p1.copyWith(fontSize: 15),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }

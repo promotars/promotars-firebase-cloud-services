@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promotars_flutter_web_landing_page/components/download_app_dialog.dart';
 import 'package:promotars_flutter_web_landing_page/utils/app_colors.dart';
 import 'package:promotars_flutter_web_landing_page/utils/app_style.dart';
+import 'package:promotars_flutter_web_landing_page/utils/responsive.dart';
 class DownloadAppButton extends StatelessWidget {
   const DownloadAppButton({
     super.key,
@@ -32,13 +33,13 @@ class DownloadAppButton extends StatelessWidget {
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: _color, width: 1)),
-        padding: const EdgeInsets.symmetric(
-          vertical: 10,
-          horizontal: 20,
+        padding: EdgeInsets.symmetric(
+          vertical: Sizes(5, 10, 10).responsiveValue(context),
+          horizontal: Sizes(10, 10, 20).responsiveValue(context),
         ),
         child: Text(
           text,
-          style: AppStyle.p1.copyWith(color: _color),
+          style: AppStyle.p1(context).copyWith(color: _color),
         ),
       ),
     );
