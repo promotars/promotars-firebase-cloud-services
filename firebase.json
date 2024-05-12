@@ -42,7 +42,7 @@
     }
   ],
   "hosting": {
-    "site": "promoters",
+    "site": "promotars",
     "public": "promotars_homescreen/build/web",
     "ignore": [
       "firebase.json",
