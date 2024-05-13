@@ -7,6 +7,12 @@ import useRecaptchaV3 from "../hooks/RecaptchaV3";
 
 
 function MainApp() {
+    const promotionId = validateAndGetPromotionId();
+    if(promotionId == null){
+        window.location.href = Utils.getPromotarsLandingPageUrl();
+        return;
+    }
+
     const [isLoading, setLoading] = useState(false);
     const [campaignData, setCampaignData] = useState(new Map())
 

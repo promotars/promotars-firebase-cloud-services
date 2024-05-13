@@ -1,3 +1,30 @@
+// {
+//   "functions": [
+//     {
+//       "source": "functions",
+//       "codebase": "default",
+//       "ignore": [
+//         "node_modules",
+//         ".git",
+//         "firebase-debug.log",
+//         "firebase-debug.*.log"
+//       ],
+//       "predeploy": [
+//         "npm --prefix \"$RESOURCE_DIR\" run lint"
+//       ]
+//     }
+//   ],
+//   "hosting": {
+//     "site": "ad-promotars",
+//     "public": "promotion_site/dist",
+//     "ignore": [
+//       "firebase.json",
+//       "**/.*",
+//       "**/node_modules/**"
+//     ]
+//   }
+// }
+
 {
   "functions": [
     {
@@ -15,8 +42,8 @@
     }
   ],
   "hosting": {
-    "site": "ad-promotars",
-    "public": "promotion_site/dist",
+    "site": "promotars",
+    "public": "promotars_homescreen/build/web",
     "ignore": [
       "firebase.json",
       "**/.*",

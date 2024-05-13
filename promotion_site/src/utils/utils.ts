@@ -1,6 +1,11 @@
 import md5 from "md5";
 
 class Utils{
+
+    static getPromotarsLandingPageUrl():string {
+      return 'https://promotars.firebaseapp.com/';
+    }
+
     static getUniqueID():string {
         // User Agent:
         const currentUserAgent = navigator.userAgent;

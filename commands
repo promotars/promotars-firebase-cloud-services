@@ -1,0 +1,17 @@
+for react app
+
+npm install
+npm run dev
+npm run build
+
+
+for flutter
+
+flutter run
+flutter build web --web-renderer canvaskit --release
+
+
+for hosting
+
+update firebase.json file
+firebase deploy --only hosting
