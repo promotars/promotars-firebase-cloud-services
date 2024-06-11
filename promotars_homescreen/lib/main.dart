@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: AppRoute.home,
       routes: {
         AppRoute.home: (context) => const Home(),
         AppRoute.privacyPolicy: (context) => const PrivacyPolicyScreen(),

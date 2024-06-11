@@ -24,10 +24,10 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     String newLine = Responsive.isDesktop(context) ?  "\n" : " ";
     final double webContentHeight =
-        Sizes(250, 390, 550).responsiveValue(context);
+        Sizes(290, 390, 550).responsiveValue(context);
     return WebTemplate(child: [
       Container(
-        height: webContentHeight + (Responsive.isMedium(context) ? 60 : 0),
+        height: webContentHeight + (Responsive.isLarge(context) ? 0 : 60),
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: AppConfig.contentPadding(context)),
         child:  Center(
@@ -59,7 +59,7 @@ class Home extends StatelessWidget {
         ),
       ),
       Container(
-        height: webContentHeight + (Responsive.isMedium(context) ? 40 : 0),
+        height: webContentHeight + (Responsive.isLarge(context) ? 0 : 40),
         color: AppColors.primary,
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: AppConfig.contentPadding(context)),
