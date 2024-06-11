@@ -1,14 +1,18 @@
 for react app
 
+cd promotion_site
 npm install
 npm run dev
 npm run build
+cd ..
 
 
 for flutter
 
+cd promotars_homescreen 
 flutter run
 flutter build web --web-renderer canvaskit --release
+cd ..
 
 
 for hosting

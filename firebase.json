@@ -15,7 +15,7 @@
 //     }
 //   ],
 //   "hosting": {
-//     "site": "ad-promotars",
+//     "site": "ads-promotars",
 //     "public": "promotion_site/dist",
 //     "ignore": [
 //       "firebase.json",
